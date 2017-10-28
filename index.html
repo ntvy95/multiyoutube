@@ -1,17 +1,9 @@
 <html>
 	<head>
 		<title>Multi Youtube</title>
-		<script src="bower_components/jquery/dist/jquery.min.js"></script>
-		<script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
-		<script src="bower_components/angular/angular.min.js"></script>
-		<script src="bower_components/angular-ui-router/release/angular-ui-router.min.js"></script>
-		<script src="bower_components/angular-route/angular-route.min.js"></script>
 		<link rel="stylesheet" type="text/css" href="bower_components/bootstrap/dist/css/bootstrap.min.css" />
-
-		<script src="http://www.youtube.com/iframe_api"></script>
-
+		<link rel="stylesheet" type="text/css" href="bower_components/angularjs-slider/dist/rzslider.min.css" />
 		<link rel="stylesheet" type="text/css" href="css/custom.css" />
-		<script src="js/custom.js"></script>
 	</head>
 
 	<body class="container">
@@ -21,22 +13,40 @@
 			responsive, mobile-first projects on the web.</p> 
 		</div>
 		<div ng-app="managelinks" ng-controller="managelinks_ctrl">
-			<label for="links[]">Links:</label>
-			<div data-ng-repeat="link in links track by $index">
-				<div id="{{link.div_id}}" class='viewer'>
-					<div class="form-group row">
-						<div class="col-xs-11">
-							<input type="links[]" class="form-control" ng-model="link.link" ng-change="updateLink($index)" />
-						</div>
-						<div class="col-xs-1">
-							<button class="btn btn-danger" ng-show="$index > 1" ng-click="removeLink($index)">-</button>
-						</div>	
-					</div>
+
+			<div class="form-group">
+				<label class="radio-inline">
+					<input type="radio" name="display" ng-model="display" value="full">Full
+				</label>
+				<label class="radio-inline">
+					<input type="radio" name="display"  ng-model="display" value="grid" checked>Grid
+				</label>
+				<label class="radio-inline">
+					<input type="radio" name="display" ng-model="display" value="large">Large
+				</label>
+			</div>
+
+			<button class="btn btn-default" ng-click="startLink()">Play</button>
+			<rzslider rz-slider-model="duration.value" rz-slider-options="duration.options"></rzslider>
+
+			<div class="viewers display-{{display}}">
+				<div data-ng-repeat="link in links track by $index" class="viewer" id="{{link.div_id}}">
+					<input style="width: {{ links.length > 2 ? 'calc(100% - 40px)' : '100%'; }};" class="form-control" ng-model="link.link" ng-change="updateLink($index)" />
+					<button class="btn btn-danger" ng-click="removeLink($index)" ng-show="links.length > 2">-</button>
 					<div id="player-{{link.div_id}}"></div>
 				</div>
 			</div>
-			<button class="btn btn-link pull-right" ng-click="addNewLink()">Add</button>
+
+			<button class="btn btn-default pull-right" ng-click="addNewLink()">Add</button>
+
 		</div>
-		<!-- <div id="player-youtube-M7lc1UVf-VE"></div> -->
 	</body>
+	<script src="bower_components/jquery/dist/jquery.min.js"></script>
+	<script src="bower_components/jquery-ui/jquery-ui.min.js"></script>
+	<script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+	<script src="bower_components/angular/angular.min.js"></script>
+	<script src="bower_components/angularjs-slider/dist/rzslider.min.js"></script>
+	<script src="http://www.youtube.com/iframe_api"></script>
+	<script src="js/utility.js"></script>
+	<script src="js/managelinks.js"></script>
 </html>
