@@ -27,7 +27,7 @@
 			</div>
 
 			<button class="btn btn-default pull-right" ng-click="addNewLink()">Add</button>
-			<button class="btn btn-default" ng-click="spLink()">{{ duration.interval_func != null ? 'Pause' : 'Play' }}</button>
+			<button class="btn btn-default" ng-click="spLink()" id="splink" disabled="true">{{ duration.interval_func != null ? 'Pause' : 'Play' }}</button>
 			<rzslider rz-slider-model="duration.value" rz-slider-options="duration.options"></rzslider>
 
 			<div class="viewers display-{{display}}">

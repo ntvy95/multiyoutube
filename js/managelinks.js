@@ -11,6 +11,7 @@ app.controller('managelinks_ctrl', function($scope, $location, $interval, $route
       },
       interval_func: null
     };
+    $scope.loading = 0;
 
     function protoNewLink(init = null) {
       var proto = {id: randomNumber(),
@@ -18,7 +19,7 @@ app.controller('managelinks_ctrl', function($scope, $location, $interval, $route
                 div_id: randomNumber(),
                 api: null,
                 at: {
-                  hour: null, minute: null, second: null, elapsed_seconds: null, interval_func: null
+                  hour: null, minute: null, second: null, elapsed_seconds: -1, interval_func: null
                 }};
       for(var i in init) {
         proto[i] = init[i];
@@ -35,6 +36,7 @@ app.controller('managelinks_ctrl', function($scope, $location, $interval, $route
     }
 
     function protoNewYTPlayer(index) {
+      $scope.loading = $scope.loading + 1;
       var player = new YT.Player('player-' +  $scope.links[index].div_id, {
           videoId: $scope.links[index].id,
           startSeconds: 0,
@@ -46,10 +48,14 @@ app.controller('managelinks_ctrl', function($scope, $location, $interval, $route
             'onStateChange': function(event) {
              if(event.data == YT.PlayerState.PLAYING) {
               $('.viewer input').prop("disabled", true);
-              if($scope.links[index].at.elapsed_seconds === null) {
+              if($scope.links[index].at.elapsed_seconds == -1) {
                 event.target.seekTo(0, true);
                 event.target.pauseVideo();
                 $scope.links[index].at.elapsed_seconds = 0;
+                $scope.loading = $scope.loading - 1;
+                if(!$scope.loading) {
+                  $('#splink').prop('disabled', false);
+                }
               }
               else {
                 $scope.links[index].at.elapsed_seconds = event.target.getCurrentTime();
@@ -163,7 +169,12 @@ app.controller('managelinks_ctrl', function($scope, $location, $interval, $route
       if($scope.links[index].api) {
         $scope.links[index].api.destroy();
         $scope.links[index].api = null;
-        $scope.links[index]
+        if($scope.links[index].at.elapsed_seconds == -1) {
+          $scope.loading = $scope.loading - 1;
+          if(!$scope.loading) {
+            $('#splink').prop('disabled', false);
+          }
+        }
       }
       else {
         $('#player-' + div_id).remove();
