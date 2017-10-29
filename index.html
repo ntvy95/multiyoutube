@@ -26,18 +26,20 @@
 				</label>
 			</div>
 
-			<button class="btn btn-default" ng-click="startLink()">Play</button>
+			<button class="btn btn-default pull-right" ng-click="addNewLink()">Add</button>
+			<button class="btn btn-default" ng-click="{{ duration.interval_func != null ? 'pauseLink()' : 'startLink()' }}">{{ duration.interval_func != null ? 'Pause' : 'Play' }}</button>
 			<rzslider rz-slider-model="duration.value" rz-slider-options="duration.options"></rzslider>
 
 			<div class="viewers display-{{display}}">
-				<div data-ng-repeat="link in links track by $index" class="viewer" id="{{link.div_id}}">
-					<input style="width: {{ links.length > 2 ? 'calc(100% - 40px)' : '100%'; }};" class="form-control" ng-model="link.link" ng-change="updateLink($index)" />
+				<div data-ng-repeat="link in links track by $index" class="viewer" id="{{link.div_id}}" ng-controller="viewer_ctrl">
+					<input style="width: {{ links.length > 2 ? 'calc(100% - 265px)' : 'calc(100% - 225px)'; }};" class="form-control" ng-model="link.link" ng-change="updateLink($index)" />
+					<input type="number" style="width: 70px;" class="form-control" ng-model="link.at.hour" />
+					<input type="number" style="width: 70px;" class="form-control" ng-model="link.at.minute" />
+					<input type="number" style="width: 70px;" class="form-control" ng-model="link.at.second" />
 					<button class="btn btn-danger" ng-click="removeLink($index)" ng-show="links.length > 2">-</button>
 					<div id="player-{{link.div_id}}"></div>
 				</div>
 			</div>
-
-			<button class="btn btn-default pull-right" ng-click="addNewLink()">Add</button>
 
 		</div>
 	</body>
