@@ -1,6 +1,6 @@
-var app = angular.module('managelinks', ['rzModule']);
+var app = angular.module('managelinks', ['rzModule', 'ngRoute']);
 
-app.controller('managelinks_ctrl', function($scope, $location, $interval) {
+app.controller('managelinks_ctrl', function($scope, $location, $interval, $route) {
 
     $scope.display = 'full';
     $scope.duration = {
@@ -61,9 +61,16 @@ app.controller('managelinks_ctrl', function($scope, $location, $interval) {
              else {
                 $('.viewer input').prop("disabled", false);
                 $interval.cancel($scope.links[index].at.interval_func);
-              }
+                switch (event.data) {
+                  case YT.PlayerState.PAUSED:
+                  case YT.PlayerState.ENDED:
+                    $scope.links[index].at.elapsed_seconds = event.target.getCurrentTime();
+                    $route.reload();
+                    break;
+                }
             }
           }
+        }
       });
       return player;
     }
@@ -185,15 +192,16 @@ app.controller('managelinks_ctrl', function($scope, $location, $interval) {
       }
     };
 
-    $scope.startLink = function() {
-      $('.viewer input').prop("disabled", true);
-      $scope.duration.options.ceil = Math.max(...durationList());
-      playAll();
-    };
-
-    $scope.pauseLink = function() {
-      $('.viewer input').prop("disabled", false);
-      pauseAll();
+    $scope.spLink = function() {
+      if($scope.duration.interval_func == null) {
+        $('.viewer input').prop("disabled", true);
+        $scope.duration.options.ceil = Math.max(...durationList());
+        playAll();
+      }
+      else {
+        $('.viewer input').prop("disabled", false);
+        pauseAll();
+      }
     };
 
     $scope.$watch('duration.value', function(old_value, new_value) {

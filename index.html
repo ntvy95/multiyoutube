@@ -27,7 +27,7 @@
 			</div>
 
 			<button class="btn btn-default pull-right" ng-click="addNewLink()">Add</button>
-			<button class="btn btn-default" ng-click="{{ duration.interval_func != null ? 'pauseLink()' : 'startLink()' }}">{{ duration.interval_func != null ? 'Pause' : 'Play' }}</button>
+			<button class="btn btn-default" ng-click="spLink()">{{ duration.interval_func != null ? 'Pause' : 'Play' }}</button>
 			<rzslider rz-slider-model="duration.value" rz-slider-options="duration.options"></rzslider>
 
 			<div class="viewers display-{{display}}">
@@ -48,6 +48,7 @@
 	<script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
 	<script src="bower_components/angular/angular.min.js"></script>
 	<script src="bower_components/angularjs-slider/dist/rzslider.min.js"></script>
+	<script src="bower_components/angular-route/angular-route.min.js"></script>
 	<script src="http://www.youtube.com/iframe_api"></script>
 	<script src="js/utility.js"></script>
 	<script src="js/managelinks.js"></script>
