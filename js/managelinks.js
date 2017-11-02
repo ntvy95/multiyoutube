@@ -3,15 +3,26 @@ var app = angular.module('managelinks', ['rzModule', 'ngRoute']);
 app.controller('managelinks_ctrl', function($scope, $location, $interval, $route) {
 
     $scope.display = 'full';
-    $scope.duration = {
-      value: 0,
-      options: {
-        floor: 0,
-        ceil: 0
-      },
-      interval_func: null
-    };
     $scope.loading = 0;
+    $scope.isStopped = true;
+    $scope.URL = $location.absUrl();
+
+    function protoDuration() {
+      return {
+        value: 0,
+        options: {
+          floor: 0,
+          ceil: 0,
+          translate: function(value) {
+            var [h,m,s] = cvt_seconds2hms(value);
+            return h + ':' + m + ':' + s;
+          }
+        },
+        interval_func: null
+      };
+    }
+
+    $scope.duration = protoDuration();
 
     function protoNewLink(init = null) {
       var proto = {id: randomNumber(),
@@ -21,8 +32,9 @@ app.controller('managelinks_ctrl', function($scope, $location, $interval, $route
                 at: {
                   hour: null, minute: null, second: null, elapsed_seconds: -1
                 },
-                stopped: false,
-                startSecond: 0};
+                startSecond: 0,
+                endSecond: Infinity,
+                isEnd: false};
       for(var i in init) {
         proto[i] = init[i];
       }
@@ -41,61 +53,45 @@ app.controller('managelinks_ctrl', function($scope, $location, $interval, $route
       $scope.loading = $scope.loading + 1;
       var player = new YT.Player('player-' +  $scope.links[index].div_id, {
           videoId: $scope.links[index].id,
-          startSeconds: 0,
           width: '100%',
           events: {
             'onReady': function(event) {
               event.target.playVideo();
             },
             'onStateChange': function(event) {
-
               switch(event.data) {
                 case YT.PlayerState.PLAYING:
-                  if($scope.links[index].at.elapsed_seconds == -1) {
+                  if($scope.isStopped) {
                     event.target.seekTo($scope.links[index].startSecond, true);
                     $scope.links[index].at.elapsed_seconds = $scope.links[index].startSecond;
-                    $scope.links[index].stopped = true;
                     event.target.pauseVideo();
-                    $scope.loading = $scope.loading - 1;
-                    if(!$scope.loading) {
-                      $('#splink').prop('disabled', false);
+                    if($scope.loading > 0) {
+                      $scope.loading = $scope.loading - 1;
+                      if(!$scope.loading) {
+                        $('#splink').prop('disabled', false);
+                      }
+                      $scope.links[index].endSecond = Math.min($scope.links[index].endSecond, event.target.getDuration());
+                      $scope.links[index].at.interval_func = $interval(function() {
+                        $scope.links[index].at.elapsed_seconds = Math.min($scope.links[index].endSecond, event.target.getCurrentTime());
+                        if($scope.links[index].at.elapsed_seconds == $scope.links[index].endSecond) {
+                          event.target.pauseVideo();
+                          $scope.links[index].isEnd = true;
+                        }
+                        else {
+                          if($scope.links[index].isEnd
+                            && $scope.duration.interval_func != null) {
+                            event.target.playVideo();
+                          }
+                        }
+                      }, 1000);
                     }
-                    $scope.links[index].at.interval_func = $interval(function() {
-                      $scope.links[index].at.elapsed_seconds = event.target.getCurrentTime();
-                    }, 1000);
-                  }
-                  else {
-                    $scope.links[index].at.elapsed_seconds = event.target.getCurrentTime();
                   }
                   break;
-            }
-            if ($scope.links[index].stopped) {
-              $scope.links[index].startSecond = event.target.getCurrentTime();
+              }
             }
           }
-        }
       });
       return player;
-    }
-
-    if(typeof $location.search().youtube == 'undefined') {
-      $scope.links = protoNewLinks(2);
-    }
-    else {
-      var youtube_id = $location.search().youtube.replace(/\s/g,'').split(',');
-      $scope.links = [];
-      for (i in youtube_id) {
-            $scope.links.push(protoNewLink({
-              link: 'http://www.youtube.com/watch?v=' + youtube_id[i],
-              id: youtube_id[i],
-              type: 'youtube',
-              div_id: 'youtube-' + youtube_id[i]  + randomNumber()}));
-      }
-      window.onYouTubeIframeAPIReady = function() {
-        for (i in $scope.links) {
-          $scope.links[i].api = protoNewYTPlayer(i);
-        }
-      };
     }
 
     function traverseLinks(funcs) {
@@ -171,42 +167,72 @@ app.controller('managelinks_ctrl', function($scope, $location, $interval, $route
         function durationList() {
           var durationL = [];
           traverseLinks({'youtube': function(i) {
-            durationL.push($scope.links[i].api.getDuration() - $scope.links[i].startSecond);
+            durationL.push($scope.links[i].endSecond);
           }});
           return durationL;
         }
 
         function playAll() {
           traverseLinks({ 'youtube': function(i) {
-            $scope.links[i].stopped = false;
+            if($scope.isStopped) {
+              $scope.links[i].startSecond = $scope.links[i].api.getCurrentTime();
+            }
             $scope.links[i].api.playVideo();
           }});
-          $scope.duration.interval_func = $interval(function () {
-            $scope.duration.value = $scope.duration.value + 1;
-          }, 1000);
         }
-
-        //$('.viewer input').prop("disabled", true);
         $scope.duration.options.ceil = Math.max(...durationList());
+        $scope.duration.interval_func = $interval(function () {
+            $scope.duration.value = $scope.duration.value + 1;
+        }, 1000);
         playAll();
       }
       else {
+        $interval.cancel($scope.duration.interval_func);
+        $scope.duration.interval_func = null;
         function pauseAll() {
-          $interval.cancel($scope.duration.interval_func);
-          $scope.duration.interval_func = null;
           traverseLinks({'youtube': function(i) {
             $scope.links[i].api.pauseVideo();
           }});
         }
-
-        //$('.viewer input').prop("disabled", false);
         pauseAll();
       }
+
+      $scope.isStopped = false;
     };
+
+    $scope.stopLink = function() {
+      $scope.isStopped = true;
+      $interval.cancel($scope.duration.interval_func);
+      $scope.duration.interval_func = null;
+      $scope.duration = protoDuration();
+      function stopAll() {
+        traverseLinks({ 'youtube': function(i) {
+          $scope.links[i].api.pauseVideo();
+        }});
+      }
+      stopAll();
+    }
+
+    $scope.getURL = function() {
+      var youtube = [], start = [], end = [];
+      traverseLinks({ 'youtube': function(i) {
+        youtube.push($scope.links[i].id);
+        start.push($scope.links[i].startSecond);
+        end.push($scope.links[i].endSecond);
+      }});
+      $location.path().search({
+        youtube : youtube.join(','),
+        start : start.join(','),
+        end : end.join(',')
+      });
+      $( "#getURL" ).dialog({modal: true});
+    }
 
     $scope.$watch('duration.value', function(newValue, oldValue) {
       if(newValue != oldValue + 1) {
-        seektoAll($scope.duration.value);
+        traverseLinks({ 'youtube': function(i) {
+          $scope.links[i].api.seekTo(Math.min($scope.links[i].startSecond + $scope.duration.value, $scope.links[i].endSecond));
+        }});
       }
     });
 
@@ -215,6 +241,44 @@ app.controller('managelinks_ctrl', function($scope, $location, $interval, $route
         $interval.cancel($scope.links[i].at.interval_func);
       }});
     });
+
+    if(typeof $location.search().youtube == 'undefined') {
+      $scope.links = protoNewLinks(2);
+    }
+    else {
+      var youtube_id = $location.search().youtube.replace(/\s/g,'').split(',');
+      $scope.links = [];
+
+      var startv = [], endv = [];
+      if(typeof $location.search().start == 'undefined') {
+        startv = Array.apply(null, Array(youtube_id.length)).map(Number.prototype.valueOf,0);
+      }
+      else {
+        startv = $location.search().start.replace(/\s/g,'').split(',');
+      }
+      if(typeof $location.search().end == 'undefined') {
+        endv = Array.apply(null, Array(youtube_id.length)).map(Number.prototype.valueOf,Infinity);
+      }
+      else {
+        endv = $location.search().end.replace(/\s/g,'').split(',');
+      }
+
+      for (i in youtube_id) {
+            $scope.links.push(protoNewLink({
+              link: 'http://www.youtube.com/watch?v=' + youtube_id[i],
+              id: youtube_id[i],
+              type: 'youtube',
+              div_id: 'youtube-' + youtube_id[i]  + randomNumber(),
+              startSecond: parseFloat(startv[i]),
+              endSecond: parseFloat(endv[i])
+            }));
+      }
+      window.onYouTubeIframeAPIReady = function() {
+        for (i in $scope.links) {
+          $scope.links[i].api = protoNewYTPlayer(i);
+        }
+      };
+    }
 });
 
 app.controller('viewer_ctrl', function($scope, $interval) {
@@ -225,11 +289,7 @@ app.controller('viewer_ctrl', function($scope, $interval) {
     var unwatch = $scope.$watch('link.at', function(newTime, oldTime) {
       if(!angular.equals(newTime, oldTime)) {
         if (oldTime.elapsed_seconds != newTime.elapsed_seconds) {
-          var s = parseInt(newTime.elapsed_seconds),
-              h = Math.floor(s/3600);
-          s -= h*3600;
-          var m = Math.floor(s/60);
-          s -= m*60;
+          var [h,m,s] = cvt_seconds2hms(parseInt(newTime.elapsed_seconds));
           $scope.link.at = {
             hour: h,
             minute: m,

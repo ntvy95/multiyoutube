@@ -3,6 +3,7 @@
 		<title>Multi Youtube</title>
 		<link rel="stylesheet" type="text/css" href="bower_components/bootstrap/dist/css/bootstrap.min.css" />
 		<link rel="stylesheet" type="text/css" href="bower_components/angularjs-slider/dist/rzslider.min.css" />
+		<link rel="stylesheet" type="text/css" href="bower_components/jquery-ui/themes/base/jquery-ui.css" />
 		<link rel="stylesheet" type="text/css" href="css/custom.css" />
 	</head>
 
@@ -26,9 +27,10 @@
 				</label>
 			</div>
 
+			<button class="btn btn-default pull-right" ng-click="getURL()">Get URL</button>
 			<button class="btn btn-default pull-right" ng-click="addNewLink()">Add</button>
-			<button class="btn btn-default" ng-click="spLink()" id="splink" disabled="true">{{ duration.interval_func != null ? 'Pause' : 'Play' }}</button>
-			<rzslider rz-slider-model="duration.value" rz-slider-options="duration.options"></rzslider>
+			<button class="btn btn-default" ng-click="spLink()" id="splink" disabled="true">{{ duration.interval_func != null ? 'Pause' : 'Play' }}</button><button class="btn btn-default" ng-click="stopLink()" ng-disabled="isStopped">Stop</button>
+			<rzslider id="duration" rz-slider-model="duration.value" rz-slider-options="duration.options" ></rzslider>
 
 			<div class="viewers display-{{display}}">
 				<div data-ng-repeat="link in links track by $index" class="viewer" id="{{link.div_id}}" ng-controller="viewer_ctrl">
@@ -41,11 +43,14 @@
 				</div>
 			</div>
 
+			<div id="getURL" title="Get URL">
+		    	<p ng-bind="URL"></p>
+			</div>
 		</div>
 	</body>
 	<script src="bower_components/jquery/dist/jquery.min.js"></script>
-	<script src="bower_components/jquery-ui/jquery-ui.min.js"></script>
 	<script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+	<script src="bower_components/jquery-ui/jquery-ui.min.js"></script>
 	<script src="bower_components/angular/angular.min.js"></script>
 	<script src="bower_components/angularjs-slider/dist/rzslider.min.js"></script>
 	<script src="bower_components/angular-route/angular-route.min.js"></script>

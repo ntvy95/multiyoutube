@@ -17,6 +17,15 @@ function extractID(url) {
   return [type, returnID];
 }
 
+function cvt_seconds2hms(s) {
+  s = parseInt(s);
+  var h = Math.floor(s/3600);
+  s -= h*3600;
+  var m = Math.floor(s/60);
+  s -= m*60;
+  return [h, m, s]
+}
+
 $(function() {
   $('.viewers').sortable({
     revert: true
