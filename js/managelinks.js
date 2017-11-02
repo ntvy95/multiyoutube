@@ -1,6 +1,6 @@
 var app = angular.module('managelinks', ['rzModule', 'ngRoute']);
 
-app.controller('managelinks_ctrl', function($scope, $location, $interval, $route) {
+app.controller('managelinks_ctrl', function($scope, $location, $interval, $timeout) {
 
     $scope.display = 'full';
     $scope.loading = 0;
@@ -30,7 +30,7 @@ app.controller('managelinks_ctrl', function($scope, $location, $interval, $route
                 div_id: randomNumber(),
                 api: null,
                 at: {
-                  hour: null, minute: null, second: null, elapsed_seconds: -1
+                  hour: null, minute: null, second: null, elapsed_seconds: -1, interval_func: null
                 },
                 startSecond: 0,
                 endSecond: Infinity,
@@ -49,6 +49,21 @@ app.controller('managelinks_ctrl', function($scope, $location, $interval, $route
       return link_arr;
     }
 
+    function link_interval(index) {
+      $scope.links[index].at.interval_func = $interval(function() {
+        console.log("elapsed : " + index + " : " + $scope.links[index].at.elapsed_seconds)
+        $scope.links[index].at.elapsed_seconds = Math.min($scope.links[index].endSecond, $scope.links[index].api.getCurrentTime());
+        if($scope.links[index].at.elapsed_seconds == $scope.links[index].endSecond) {
+          $scope.links[index].api.pauseVideo();
+          $scope.links[index].isEnd = true;
+        }
+        else if($scope.links[index].isEnd
+          && $scope.duration.interval_func != null) {
+          $scope.links[index].api.playVideo();
+        }
+      }, 1000);
+    }
+
     function protoNewYTPlayer(index) {
       $scope.loading = $scope.loading + 1;
       var player = new YT.Player('player-' +  $scope.links[index].div_id, {
@@ -59,34 +74,25 @@ app.controller('managelinks_ctrl', function($scope, $location, $interval, $route
               event.target.playVideo();
             },
             'onStateChange': function(event) {
+              if($scope.isStopped && $scope.links[index].at.elapsed_seconds != -1) {
+                $scope.links[index].startSecond = $scope.links[index].api.getCurrentTime();
+              }
               switch(event.data) {
                 case YT.PlayerState.PLAYING:
-                  if($scope.isStopped) {
-                    event.target.seekTo($scope.links[index].startSecond, true);
-                    $scope.links[index].at.elapsed_seconds = $scope.links[index].startSecond;
-                    event.target.pauseVideo();
-                    if($scope.loading > 0) {
-                      $scope.loading = $scope.loading - 1;
-                      if(!$scope.loading) {
-                        $('#splink').prop('disabled', false);
-                      }
-                      $scope.links[index].endSecond = Math.min($scope.links[index].endSecond, event.target.getDuration());
-                      $scope.links[index].at.interval_func = $interval(function() {
-                        $scope.links[index].at.elapsed_seconds = Math.min($scope.links[index].endSecond, event.target.getCurrentTime());
-                        if($scope.links[index].at.elapsed_seconds == $scope.links[index].endSecond) {
-                          event.target.pauseVideo();
-                          $scope.links[index].isEnd = true;
-                        }
-                        else {
-                          if($scope.links[index].isEnd
-                            && $scope.duration.interval_func != null) {
-                            event.target.playVideo();
-                          }
-                        }
-                      }, 1000);
+                  if($scope.loading > 0) {
+                    $scope.links[index].at.elapsed_seconds = $scope.links[index].startSecond + $scope.duration.value;
+                    event.target.seekTo($scope.links[index].at.elapsed_seconds, true);
+                    $scope.loading = $scope.loading - 1;
+                    if(!$scope.loading) {
+                      $('#splink').prop('disabled', false);
                     }
+                    $scope.links[index].endSecond = Math.min($scope.links[index].endSecond, event.target.getDuration());
+                    link_interval(index);
                   }
-                  break;
+                  if($scope.duration.interval_func == null) {
+                    event.target.pauseVideo();
+                  }
+                break;
               }
             }
           }
@@ -139,9 +145,12 @@ app.controller('managelinks_ctrl', function($scope, $location, $interval, $route
 
       if(success) {
         $('#' + $scope.links[index].div_id).append('<div id="player-' + new_div_id + '"></div>');
-        $scope.links[index].type = new_type;
-        $scope.links[index].id = new_id;
-        $scope.links[index].div_id = new_div_id;
+        
+        $scope.links[index] = protoNewLink({
+          type: new_type,
+          id: new_id,
+          div_id: new_div_id
+        });
         switch(new_type) {
           case 'youtube':
             $scope.links[index].api = protoNewYTPlayer(index);
@@ -160,40 +169,37 @@ app.controller('managelinks_ctrl', function($scope, $location, $interval, $route
       }
     };
 
-    $scope.spLink = function() {
-
-      if($scope.duration.interval_func == null) {
-
-        function durationList() {
-          var durationL = [];
-          traverseLinks({'youtube': function(i) {
-            durationL.push($scope.links[i].endSecond);
-          }});
-          return durationL;
-        }
-
-        function playAll() {
+    function playAll() {
+          function durationList() {
+            var durationL = [];
+            traverseLinks({'youtube': function(i) {
+              durationL.push($scope.links[i].endSecond);
+            }});
+            return durationL;
+          }
+          $scope.duration.options.ceil = Math.max(...durationList());
+          $scope.duration.interval_func = $interval(function () {
+              $scope.duration.value = $scope.duration.value + 1;
+          }, 1000);
           traverseLinks({ 'youtube': function(i) {
-            if($scope.isStopped) {
-              $scope.links[i].startSecond = $scope.links[i].api.getCurrentTime();
-            }
             $scope.links[i].api.playVideo();
           }});
-        }
-        $scope.duration.options.ceil = Math.max(...durationList());
-        $scope.duration.interval_func = $interval(function () {
-            $scope.duration.value = $scope.duration.value + 1;
-        }, 1000);
-        playAll();
-      }
-      else {
-        $interval.cancel($scope.duration.interval_func);
-        $scope.duration.interval_func = null;
-        function pauseAll() {
+    }
+
+    function pauseAll() {
+          $interval.cancel($scope.duration.interval_func);
+          $scope.duration.interval_func = null;
           traverseLinks({'youtube': function(i) {
             $scope.links[i].api.pauseVideo();
           }});
-        }
+    }
+
+    $scope.spLink = function() {
+
+      if($scope.duration.interval_func == null) {
+        playAll();
+      }
+      else {
         pauseAll();
       }
 
@@ -214,17 +220,38 @@ app.controller('managelinks_ctrl', function($scope, $location, $interval, $route
     }
 
     $scope.getURL = function() {
-      var youtube = [], start = [], end = [];
+      var search_var = {
+        youtube: [],
+        start: [],
+        end: []
+      }, notinclude = [true, true];
+      search_var.youtube = [];
+      search_var.start = [];
+      search_var.end = [];
       traverseLinks({ 'youtube': function(i) {
-        youtube.push($scope.links[i].id);
-        start.push($scope.links[i].startSecond);
-        end.push($scope.links[i].endSecond);
+        search_var.youtube.push($scope.links[i].id);
+        search_var.start.push($scope.links[i].startSecond);
+        notinclude[0] = notinclude[0] && $scope.links[i].startSecond == 0;
+        search_var.end.push($scope.links[i].endSecond);
+        notinclude[1] = notinclude[1]
+                        && (($scope.links[i].endSecond == Infinity)
+                        || ($scope.links[i].endSecond == $scope.links[i].api.getDuration()));
       }});
-      $location.path().search({
-        youtube : youtube.join(','),
-        start : start.join(','),
-        end : end.join(',')
-      });
+      search_var.youtube = search_var.youtube.join(',');
+      if(notinclude[0]) {
+        delete search_var.start;
+      }
+      else {
+         search_var.start = search_var.start.join(',');
+      }
+      if(notinclude[1]) {
+        delete search_var.end;
+      }
+      else {
+         search_var.end = search_var.end.join(',');
+      }
+      $location.search(search_var);
+      $scope.URL = $location.absUrl();
       $( "#getURL" ).dialog({modal: true});
     }
 

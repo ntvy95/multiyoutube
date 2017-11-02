@@ -26,8 +26,8 @@ function cvt_seconds2hms(s) {
   return [h, m, s]
 }
 
-$(function() {
+/*$(function() {
   $('.viewers').sortable({
     revert: true
   });
-});
+});*/
