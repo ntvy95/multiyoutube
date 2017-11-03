@@ -124,6 +124,7 @@ app.controller('managelinks_ctrl', function($scope, $location, $interval, $timeo
               $('#splink').prop('disabled', false);
             }
           }
+          $interval.cancel($scope.links[index].at.interval_func);
         }
         else {
           $('#player-' + $scope.links[index].div_id).remove();
@@ -287,6 +288,7 @@ app.controller('managelinks_ctrl', function($scope, $location, $interval, $timeo
     });
 
     $scope.$on('destroy', function() {
+      $interval.cancel($scope.duration.interval_func);
       traverseLinks({'youtube': function(i) {
         $interval.cancel($scope.links[i].at.interval_func);
       }});
