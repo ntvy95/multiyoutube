@@ -1,4 +1,4 @@
-var app = angular.module('managelinks', ['rzModule', 'ngRoute']);
+var app = angular.module('managelinks', ['rzModule']);
 
 app.controller('managelinks_ctrl', function($scope, $location, $interval, $timeout) {
 
