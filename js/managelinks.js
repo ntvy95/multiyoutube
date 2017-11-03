@@ -51,7 +51,6 @@ app.controller('managelinks_ctrl', function($scope, $location, $interval, $timeo
 
     function link_interval(index) {
       $scope.links[index].at.interval_func = $interval(function() {
-        console.log("elapsed : " + index + " : " + $scope.links[index].at.elapsed_seconds)
         $scope.links[index].at.elapsed_seconds = Math.min($scope.links[index].endSecond, $scope.links[index].api.getCurrentTime());
         if($scope.links[index].at.elapsed_seconds == $scope.links[index].endSecond) {
           $scope.links[index].api.pauseVideo();
@@ -223,11 +222,10 @@ app.controller('managelinks_ctrl', function($scope, $location, $interval, $timeo
       var search_var = {
         youtube: [],
         start: [],
-        end: []
+        end: [],
+        current: $scope.duration.value
       }, notinclude = [true, true];
-      search_var.youtube = [];
-      search_var.start = [];
-      search_var.end = [];
+
       traverseLinks({ 'youtube': function(i) {
         search_var.youtube.push($scope.links[i].id);
         search_var.start.push($scope.links[i].startSecond);
@@ -250,6 +248,9 @@ app.controller('managelinks_ctrl', function($scope, $location, $interval, $timeo
       else {
          search_var.end = search_var.end.join(',');
       }
+      if(!search_var.current) {
+        delete search_var.current;
+      }
       $location.search(search_var);
       $scope.URL = $location.absUrl();
       $( "#getURL" ).dialog({modal: true});
@@ -261,6 +262,21 @@ app.controller('managelinks_ctrl', function($scope, $location, $interval, $timeo
           $scope.links[i].api.seekTo(Math.min($scope.links[i].startSecond + $scope.duration.value, $scope.links[i].endSecond));
         }});
       }
+    });
+
+    $scope.$watch('display', function() {
+      if($scope.display == 'custom') {
+        $('#CSSTyle').prop('disabled', false);
+      }
+      else {
+        $('#CSSTyle').prop('disabled', true);
+        $scope.CSSTyle = $("input[name='display'][value='" + $scope.display + "']+div").html();
+        $('head style').html($scope.CSSTyle);
+      }
+    });
+
+    $scope.$watch('CSSTyle', function() {
+      $('head style').html($scope.CSSTyle);
     });
 
     $scope.$on('destroy', function() {
@@ -288,6 +304,9 @@ app.controller('managelinks_ctrl', function($scope, $location, $interval, $timeo
       }
       else {
         endv = $location.search().end.replace(/\s/g,'').split(',');
+      }
+      if(typeof $location.search().current != 'undefined') {
+        $scope.duration.value = $location.search().current;
       }
 
       for (i in youtube_id) {

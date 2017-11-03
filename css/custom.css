@@ -1,21 +1,3 @@
-.viewers.display-grid {
-	display: grid;
-	grid-template-columns: 1fr 1fr 1fr;
-}
-
-.viewers.display-large {
-	display: grid;
-	grid-template-columns: 1fr 1fr 1fr;
-}
-.viewers.display-large .viewer:nth-child(1) {
-	grid-column-start: 1;
-	grid-column-end: 3;
-}
-.viewers.display-large .viewer:nth-child(2) {
-	grid-column-start: 3;
-	grid-column-end: 4;
-}
-
 .viewer { 
 	margin: 20px;
 	padding: 20px;
@@ -27,4 +9,8 @@
 
 .viewer * {
 	display: inline;
+}
+
+input[name="display"]+div {
+	display: none;
 }

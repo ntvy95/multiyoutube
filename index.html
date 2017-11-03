@@ -5,12 +5,14 @@
 		<link rel="stylesheet" type="text/css" href="bower_components/angularjs-slider/dist/rzslider.min.css" />
 		<link rel="stylesheet" type="text/css" href="bower_components/jquery-ui/themes/base/jquery-ui.css" />
 		<link rel="stylesheet" type="text/css" href="css/custom.css" />
+		<style></style>
 	</head>
 
 	<body class="container">
 		<div class="jumbotron">
 			<h1>Multi Youtube</h1> 
-			<p>Easy to use. Easy to share.</p> 
+			<p>Easy to use. Easy to save. Easy to share.</p>
+			<p><s>Hard to debug.</s></p> 
 		</div>
 		<div ng-app="managelinks" ng-controller="managelinks_ctrl">
 
@@ -20,24 +22,49 @@
 				</label>
 				<label class="radio-inline">
 					<input type="radio" name="display"  ng-model="display" value="grid" checked>Grid
+					<div>
+.viewers.display {
+	display: grid;
+	grid-template-columns: 1fr 1fr 1fr;
+}
+					</div>
 				</label>
 				<label class="radio-inline">
 					<input type="radio" name="display" ng-model="display" value="large">Large
+					<div>
+.viewers.display {
+	display: grid;
+	grid-template-columns: 1fr 1fr 1fr;
+}
+.viewers.display .viewer:nth-child(1) {
+	grid-column-start: 1;
+	grid-column-end: 3;
+}
+.viewers.display .viewer:nth-child(2) {
+	grid-column-start: 3;
+	grid-column-end: 4;
+}
+					</div>
+				</label>
+				<label class="radio-inline">
+					<input type="radio" name="display" ng-model="display" value="custom">Custom
 				</label>
 			</div>
+
+			<textarea id="CSSTyle" class="form-control" ng-model="CSSTyle" disabled="true" rows="10"></textarea>
 
 			<button class="btn btn-default pull-right" ng-click="getURL()">Get URL</button>
 			<button class="btn btn-default pull-right" ng-click="addNewLink()">Add</button>
 			<button class="btn btn-default" ng-click="spLink()" id="splink" disabled="true">{{ duration.interval_func != null ? 'Pause' : 'Play' }}</button><button class="btn btn-default" ng-click="stopLink()" ng-disabled="isStopped">Stop</button>
 			<rzslider id="duration" rz-slider-model="duration.value" rz-slider-options="duration.options" ></rzslider>
 
-			<div class="viewers display-{{display}}">
+			<div class="viewers display">
 				<div data-ng-repeat="link in links track by $index" class="viewer" id="{{link.div_id}}" ng-controller="viewer_ctrl">
 					<input style="width: {{ links.length > 2 ? 'calc(100% - 265px)' : 'calc(100% - 225px)'; }};" class="form-control" ng-model="link.link" ng-change="updateLink($index)" />
 					<input type="number" style="width: 70px;" class="form-control" ng-model="link.at.hour" />
 					<input type="number" style="width: 70px;" class="form-control" ng-model="link.at.minute" />
 					<input type="number" style="width: 70px;" class="form-control" ng-model="link.at.second" />
-					<button class="btn btn-danger" ng-click="removeLink($index)" ng-show="links.length > 2">-</button>
+					<button class="btn btn-danger" ng-click="removeLink($index)" style="display: {{ links.length > 2 ? '' : 'none' }};">-</button>
 					<div id="player-{{link.div_id}}"></div>
 				</div>
 			</div>
