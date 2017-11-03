@@ -267,13 +267,18 @@ app.controller('managelinks_ctrl', function($scope, $location, $interval, $timeo
     });
 
     $scope.$watch('display', function() {
-      if($scope.display == 'custom') {
-        $('#CSSTyle').prop('disabled', false);
-      }
-      else {
-        $('#CSSTyle').prop('disabled', true);
-        $scope.CSSTyle = $("input[name='display'][value='" + $scope.display + "']+div").html();
-        $('head style').html($scope.CSSTyle);
+      switch($scope.display) {
+        case 'custom':
+          $('#CSSTyle').prop('disabled', false);
+          break;
+        case 'full':
+          $('head style').html('');
+          break;
+        default:
+           $('#CSSTyle').prop('disabled', true);
+          $scope.CSSTyle = $("input[name='display'][value='" + $scope.display + "']+div").html();
+          $('head style').html($scope.CSSTyle);
+          break;
       }
     });
 
