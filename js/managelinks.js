@@ -26,6 +26,7 @@ app.controller('managelinks_ctrl', function($scope, $location, $interval, $timeo
 
     function protoNewLink(init = null) {
       var proto = {id: randomNumber(),
+                link: null,
                 type: '',
                 div_id: randomNumber(),
                 api: null,
@@ -60,6 +61,9 @@ app.controller('managelinks_ctrl', function($scope, $location, $interval, $timeo
           && $scope.duration.interval_func != null) {
           $scope.links[index].api.playVideo();
         }
+        else if($scope.isStopped) {
+          $scope.links[index].startSecond = $scope.links[index].api.getCurrentTime();
+        }
       }, 1000);
     }
 
@@ -73,9 +77,6 @@ app.controller('managelinks_ctrl', function($scope, $location, $interval, $timeo
               event.target.playVideo();
             },
             'onStateChange': function(event) {
-              if($scope.isStopped && $scope.links[index].at.elapsed_seconds != -1) {
-                $scope.links[index].startSecond = $scope.links[index].api.getCurrentTime();
-              }
               switch(event.data) {
                 case YT.PlayerState.PLAYING:
                   if($scope.loading > 0) {
@@ -132,7 +133,7 @@ app.controller('managelinks_ctrl', function($scope, $location, $interval, $timeo
       var new_type, new_id, success = true,
           new_div_id = new_type + '-' + new_id + '-' + randomNumber();
 
-      [new_type, new_id] = extractID($scope.links[index].link, new_type);
+      [new_type, new_id] = extractID($scope.links[index].link);
 
       if(new_id === null) {
         success = false;
@@ -148,7 +149,8 @@ app.controller('managelinks_ctrl', function($scope, $location, $interval, $timeo
         $scope.links[index] = protoNewLink({
           type: new_type,
           id: new_id,
-          div_id: new_div_id
+          div_id: new_div_id,
+          link: $scope.links[index].link
         });
         switch(new_type) {
           case 'youtube':
@@ -205,16 +207,16 @@ app.controller('managelinks_ctrl', function($scope, $location, $interval, $timeo
       $scope.isStopped = false;
     };
 
-    $scope.stopLink = function() {
-      $scope.isStopped = true;
-      $interval.cancel($scope.duration.interval_func);
-      $scope.duration.interval_func = null;
-      $scope.duration = protoDuration();
-      function stopAll() {
+    function stopAll() {
         traverseLinks({ 'youtube': function(i) {
           $scope.links[i].api.pauseVideo();
         }});
-      }
+        $interval.cancel($scope.duration.interval_func);
+        $scope.duration = protoDuration();
+    }
+
+    $scope.stopLink = function() {
+      $scope.isStopped = true;
       stopAll();
     }
 
@@ -257,7 +259,7 @@ app.controller('managelinks_ctrl', function($scope, $location, $interval, $timeo
     }
 
     $scope.$watch('duration.value', function(newValue, oldValue) {
-      if(newValue != oldValue + 1) {
+      if(newValue != oldValue + 1 && newValue != oldValue) {
         traverseLinks({ 'youtube': function(i) {
           $scope.links[i].api.seekTo(Math.min($scope.links[i].startSecond + $scope.duration.value, $scope.links[i].endSecond));
         }});
