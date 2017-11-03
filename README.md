@@ -30,6 +30,6 @@ The first time you click `Play` button, the two youtube videos q0LILXfwhdk and 9
 
 If you click `Stop` button, the two videos will be ready to play starting from the second 40 and 20, respectively.
 
-You can use the `Get URL` button to save and share your combination along with your watching progress.
+You can use the `Get URL` button to save and share your combination (in `youtube`, `start`, `end`) along with your watching progress (in `current`).
 
-For the purpose of sharing, you may want to delete the part `&current=10` from the retrieved URL.
+For the purpose of sharing, you may want to manually delete the part `&current=10` from the retrieved URL.
