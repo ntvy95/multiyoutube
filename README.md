@@ -28,7 +28,9 @@ Let's break the above URL down:
 
 The first time you click `Play` button, the two youtube videos q0LILXfwhdk and 9UUPEo849_s will be played, starts from the second 40+10 and 2+10, respectively and ends at the second 59.25732426303855 and 22.561, respectively.
 
-If you click `Stop` button, the two videos will be ready to play starting from the second 40 and 20, respectively. You now are able to adjust the variable `start` by tuning time slider of each video. There is no way to adjust the variable `end` on the website, you have to manually set it for your self as I do not think the usage of `end` is common.
+If you click `Stop` button, the two videos will be ready to play starting from the second 40 and 20, respectively.
+
+In `Stop` mode (before you click the `Play` button for the first time and right after you click the `Stop` button) you are able to adjust the variable `start` by tuning time slider of each video. There is no way to adjust the variable `end` on the website, you have to manually set it for your self as I do not think the usage of `end` is common.
 
 You can use the `Get URL` button to save and share your combination (in `youtube`, `start`, `end`) along with your watching progress (in `current`).
 
