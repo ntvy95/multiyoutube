@@ -18,7 +18,7 @@ The variable `current` is used to save your watching progress.
 
 https://ntvy95.github.io/multiyoutube/#!?youtube=q0LILXfwhdk,9UUPEo849_s&start=40,2&end=59.25732426303855,22.561&current=10
 
-Let's break the above URL down:
+Let's break down the above URL:
 
 <table>
   <tr><th>youtube</th><th>start</th><th>end</th><th>current</th></tr>
