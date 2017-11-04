@@ -4,8 +4,9 @@ app.controller('managelinks_ctrl', function($scope, $location, $interval, $timeo
 
     $scope.display = 'full';
     $scope.loading = 0;
-    $scope.isStopped = true;
     $scope.URL = $location.absUrl();
+    $scope.PS = Object.freeze({UNSTARTED: 0, STOPPED: 1, PLAYING: 2, PAUSED: 3});
+    $scope.PlayerState = $scope.PS.UNSTARTED;
 
     function protoDuration() {
       return {
@@ -61,7 +62,8 @@ app.controller('managelinks_ctrl', function($scope, $location, $interval, $timeo
           && $scope.duration.interval_func != null) {
           $scope.links[index].api.playVideo();
         }
-        else if($scope.isStopped) {
+        else if($scope.PlayerState == $scope.PS.STOPPED
+          && $scope.links[index].at.elapsed_seconds == $scope.links[index].startSecond + $scope.duration.value) {
           $scope.links[index].startSecond = $scope.links[index].api.getCurrentTime();
         }
       }, 1000);
@@ -171,54 +173,42 @@ app.controller('managelinks_ctrl', function($scope, $location, $interval, $timeo
       }
     };
 
-    function playAll() {
-          function durationList() {
+    $scope.spLink = function() {
+
+      if($scope.duration.interval_func == null) {
+        function durationList() {
             var durationL = [];
             traverseLinks({'youtube': function(i) {
               durationL.push($scope.links[i].endSecond);
             }});
             return durationL;
           }
-          $scope.duration.options.ceil = Math.max(...durationList());
-          $scope.duration.interval_func = $interval(function () {
+        $scope.duration.options.ceil = Math.max(...durationList());
+        $scope.duration.interval_func = $interval(function () {
               $scope.duration.value = $scope.duration.value + 1;
-          }, 1000);
-          traverseLinks({ 'youtube': function(i) {
+        }, 1000);
+        traverseLinks({ 'youtube': function(i) {
             $scope.links[i].api.playVideo();
-          }});
-    }
-
-    function pauseAll() {
-          $interval.cancel($scope.duration.interval_func);
+        }});
+        $scope.PlayerState = $scope.PS.PLAYING;
+      }
+      else {
+        $interval.cancel($scope.duration.interval_func);
           $scope.duration.interval_func = null;
           traverseLinks({'youtube': function(i) {
             $scope.links[i].api.pauseVideo();
-          }});
-    }
-
-    $scope.spLink = function() {
-
-      if($scope.duration.interval_func == null) {
-        playAll();
+        }});
+        $scope.PlayerState = $scope.PS.PAUSED;
       }
-      else {
-        pauseAll();
-      }
-
-      $scope.isStopped = false;
     };
 
-    function stopAll() {
-        traverseLinks({ 'youtube': function(i) {
-          $scope.links[i].api.pauseVideo();
-        }});
-        $interval.cancel($scope.duration.interval_func);
-        $scope.duration = protoDuration();
-    }
-
     $scope.stopLink = function() {
-      $scope.isStopped = true;
-      stopAll();
+      traverseLinks({ 'youtube': function(i) {
+        $scope.links[i].api.pauseVideo();
+      }});
+      $interval.cancel($scope.duration.interval_func);
+      $scope.duration = protoDuration();
+      $scope.PlayerState = $scope.PS.STOPPED;
     }
 
     $scope.getURL = function() {
