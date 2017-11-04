@@ -16,6 +16,8 @@
 		</div>
 		<div ng-app="managelinks" ng-controller="managelinks_ctrl">
 
+			<textarea id="CSSTyle" class="form-control" ng-model="CSSTyle" disabled="true" rows="10"></textarea>
+			
 			<div class="form-group">
 				<label class="radio-inline">
 					<input type="radio" name="display" ng-model="display" value="full">Full
@@ -47,11 +49,27 @@
 					</div>
 				</label>
 				<label class="radio-inline">
+					<input type="radio" name="display" ng-model="display" value="large-rev">Large (revered)
+					<div>
+.viewers.display {
+	display: grid;
+	grid-template-columns: 1fr 1fr 1fr;
+}
+.viewers.display .viewer:nth-child(2) {
+	grid-column-start: 1;
+	grid-column-end: 3;
+	grid-row-start: 1;							
+}
+.viewers.display .viewer:nth-child(1) {
+	grid-column-start: 3;
+	grid-column-end: 4;
+}
+					</div>
+				</label>
+				<label class="radio-inline">
 					<input type="radio" name="display" ng-model="display" value="custom">Custom
 				</label>
 			</div>
-
-			<textarea id="CSSTyle" class="form-control" ng-model="CSSTyle" disabled="true" rows="10"></textarea>
 
 			<button class="btn btn-default pull-right" ng-click="getURL()">Get URL</button>
 			<button class="btn btn-default pull-right" ng-click="addNewLink()">Add</button>
