@@ -75,7 +75,6 @@ app.controller('managelinks_ctrl', function($scope, $location, $interval, $timeo
           videoId: $scope.links[index].id,
           width: '100%',
           playerVars: {
-            'controls': 0,
             'showinfo': 0,
             'origin': 'https://ntvy95.github.io'
           },
