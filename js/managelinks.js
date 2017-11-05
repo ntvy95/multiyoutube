@@ -76,8 +76,7 @@ app.controller('managelinks_ctrl', function($scope, $location, $interval, $timeo
           width: '100%',
           playerVars: {
             'controls': 0,
-            'showinfo': 0,
-            'origin': 'https://github.io'
+            'showinfo': 0
           },
           events: {
             'onReady': function(event) {
@@ -321,7 +320,7 @@ app.controller('managelinks_ctrl', function($scope, $location, $interval, $timeo
 
       for (i in youtube_id) {
             $scope.links.push(protoNewLink({
-              link: 'http://www.youtube.com/watch?v=' + youtube_id[i],
+              link: 'https://www.youtube.com/watch?v=' + youtube_id[i],
               id: youtube_id[i],
               type: 'youtube',
               div_id: 'youtube-' + youtube_id[i]  + randomNumber(),
