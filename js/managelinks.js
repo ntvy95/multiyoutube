@@ -76,7 +76,8 @@ app.controller('managelinks_ctrl', function($scope, $location, $interval, $timeo
           width: '100%',
           playerVars: {
             'controls': 0,
-            'showinfo': 0
+            'showinfo': 0,
+            'origin': 'https://ntvy95.github.io/multiyoutube/'
           },
           events: {
             'onReady': function(event) {
