@@ -74,6 +74,11 @@ app.controller('managelinks_ctrl', function($scope, $location, $interval, $timeo
       var player = new YT.Player('player-' +  $scope.links[index].div_id, {
           videoId: $scope.links[index].id,
           width: '100%',
+          playerVars: {
+            'controls': 0,
+            'showinfo': 0,
+            'origin': '*'
+          },
           events: {
             'onReady': function(event) {
               event.target.playVideo();
@@ -175,6 +180,8 @@ app.controller('managelinks_ctrl', function($scope, $location, $interval, $timeo
 
     $scope.spLink = function() {
 
+      $('.playercontrol input').prop('disabled', true);
+
       if($scope.duration.interval_func == null) {
         function durationList() {
             var durationL = [];
@@ -203,12 +210,16 @@ app.controller('managelinks_ctrl', function($scope, $location, $interval, $timeo
     };
 
     $scope.stopLink = function() {
+
+      $('.playercontrol input').prop('disabled', false);
+
       traverseLinks({ 'youtube': function(i) {
         $scope.links[i].api.pauseVideo();
       }});
       $interval.cancel($scope.duration.interval_func);
       $scope.duration = protoDuration();
       $scope.PlayerState = $scope.PS.STOPPED;
+
     }
 
     $scope.getURL = function() {
@@ -340,7 +351,7 @@ app.controller('viewer_ctrl', function($scope, $interval) {
             minute: m,
             second: s,
             elapsed_seconds: newTime.elapsed_seconds
-          }
+          };
         }
         else {
           $scope.link.at.elapsed_seconds = $scope.link.at.elapsed_seconds + (newTime.hour - oldTime.hour) * 3600 + (newTime.minute - oldTime.minute) * 60 + (newTime.second - oldTime.second);

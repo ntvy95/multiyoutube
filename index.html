@@ -78,10 +78,12 @@
 
 			<div class="viewers display">
 				<div data-ng-repeat="link in links track by $index" class="viewer" id="{{link.div_id}}" ng-controller="viewer_ctrl">
-					<input style="width: {{ links.length > 2 ? 'calc(100% - 265px)' : 'calc(100% - 225px)'; }};" class="form-control" ng-model="link.link" ng-change="updateLink($index)" />
-					<input type="number" style="width: 70px;" class="form-control" ng-model="link.at.hour" />
-					<input type="number" style="width: 70px;" class="form-control" ng-model="link.at.minute" />
-					<input type="number" style="width: 70px;" class="form-control" ng-model="link.at.second" />
+					<div class="form-group playercontrol">
+						<input style="width: {{ links.length > 2 ? 'calc(100% - 265px)' : 'calc(100% - 225px)'; }};" class="form-control" ng-model="link.link" ng-change="updateLink($index)" />
+						<input type="number" style="width: 70px;" class="form-control" ng-model="link.at.hour" />
+						<input type="number" style="width: 70px;" class="form-control" ng-model="link.at.minute" />
+						<input type="number" style="width: 70px;" class="form-control" ng-model="link.at.second" />
+					</div>
 					<button class="btn btn-danger" ng-click="removeLink($index)" style="display: {{ links.length > 2 ? '' : 'none' }};">-</button>
 					<div id="player-{{link.div_id}}"></div>
 				</div>
