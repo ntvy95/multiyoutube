@@ -193,11 +193,11 @@ app.controller('managelinks_ctrl', function($scope, $location, $interval, $timeo
         $scope.PlayerState = $scope.PS.PLAYING;
       }
       else {
-        $interval.cancel($scope.duration.interval_func);
-          $scope.duration.interval_func = null;
-          traverseLinks({'youtube': function(i) {
+        traverseLinks({'youtube': function(i) {
             $scope.links[i].api.pauseVideo();
         }});
+        $interval.cancel($scope.duration.interval_func);
+        $scope.duration.interval_func = null;
         $scope.PlayerState = $scope.PS.PAUSED;
       }
     };
