@@ -280,9 +280,10 @@ app.controller('managelinks_ctrl', function($scope, $location, $interval, $timeo
           break;
         case 'full':
           $('head style').html('');
+          $scope.CSSTyle = '';
           break;
         default:
-           $('#CSSTyle').prop('disabled', true);
+          $('#CSSTyle').prop('disabled', true);
           $scope.CSSTyle = $("input[name='display'][value='" + $scope.display + "']+div").html();
           $('head style').html($scope.CSSTyle);
           break;
