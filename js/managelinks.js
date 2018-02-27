@@ -57,13 +57,14 @@ app.controller('managelinks_ctrl', function($scope, $location, $interval, $timeo
         $scope.links[index].at.elapsed_seconds = Math.min($scope.links[index].endSecond, $scope.links[index].api.getCurrentTime());
         if($scope.links[index].at.elapsed_seconds == $scope.links[index].endSecond) {
           $scope.links[index].api.pauseVideo();
-          $scope.links[index].isEnd = true;
-          $scope.isEnd = $scope.isEnd - 1;
-          console.log($scope.isEnd);
-          if ($scope.isEnd == 0) {
-              $interval.cancel($scope.duration.interval_func);
-              $scope.duration.interval_func = null;
-          }
+          if ($scope.links[index].isEnd == false) {  
+              $scope.isEnd = $scope.isEnd - 1;
+              $scope.links[index].isEnd = true;
+              if ($scope.isEnd == 0) {
+                  $interval.cancel($scope.duration.interval_func);
+                  $scope.duration.interval_func = null;
+              }
+           }
         }
         else if($scope.links[index].isEnd
           && $scope.duration.interval_func != null) {
