@@ -59,6 +59,7 @@ app.controller('managelinks_ctrl', function($scope, $location, $interval, $timeo
           $scope.links[index].api.pauseVideo();
           $scope.links[index].isEnd = true;
           $scope.isEnd = $scope.isEnd - 1;
+          console.log($scope.isEnd);
           if ($scope.isEnd == 0) {
               $interval.cancel($scope.duration.interval_func);
               $scope.duration.interval_func = null;
