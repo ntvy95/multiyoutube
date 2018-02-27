@@ -185,7 +185,7 @@ app.controller('managelinks_ctrl', function($scope, $location, $interval, $timeo
         function durationList() {
             var durationL = [];
             traverseLinks({'youtube': function(i) {
-              durationL.push($scope.links[i].endSecond);
+              durationL.push($scope.links[i].endSecond - $scope.links[i].startSecond);
             }});
             return durationL;
           }
