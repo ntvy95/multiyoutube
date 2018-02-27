@@ -54,7 +54,7 @@ app.controller('managelinks_ctrl', function($scope, $location, $interval, $timeo
     function link_interval(index) {
       $scope.links[index].at.interval_func = $interval(function() {
         $scope.links[index].at.elapsed_seconds = Math.min($scope.links[index].endSecond, $scope.links[index].api.getCurrentTime());
-        if($scope.links[index].at.elapsed_seconds == $scope.links[index].endSecond) {
+        if($scope.links[index].at.elapsed_seconds == $scope.links[index].endSecond - $scope.links[index].startSecond) {
           $scope.links[index].api.pauseVideo();
           $scope.links[index].isEnd = true;
         }
