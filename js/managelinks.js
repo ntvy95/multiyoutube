@@ -7,6 +7,7 @@ app.controller('managelinks_ctrl', function($scope, $location, $interval, $timeo
     $scope.URL = $location.absUrl();
     $scope.PS = Object.freeze({UNSTARTED: 0, STOPPED: 1, PLAYING: 2, PAUSED: 3});
     $scope.PlayerState = $scope.PS.UNSTARTED;
+    $scope.isEnd = 0;
 
     function protoDuration() {
       return {
@@ -54,9 +55,14 @@ app.controller('managelinks_ctrl', function($scope, $location, $interval, $timeo
     function link_interval(index) {
       $scope.links[index].at.interval_func = $interval(function() {
         $scope.links[index].at.elapsed_seconds = Math.min($scope.links[index].endSecond, $scope.links[index].api.getCurrentTime());
-        if($scope.links[index].at.elapsed_seconds == $scope.links[index].endSecond - $scope.links[index].startSecond) {
+        if($scope.links[index].at.elapsed_seconds == $scope.links[index].endSecond) {
           $scope.links[index].api.pauseVideo();
           $scope.links[index].isEnd = true;
+          $scope.isEnd = $scope.isEnd - 1;
+          if ($scope.isEnd == 0) {
+              $interval.cancel($scope.duration.interval_func);
+              $scope.duration.interval_func = null;
+          }
         }
         else if($scope.links[index].isEnd
           && $scope.duration.interval_func != null) {
@@ -103,12 +109,13 @@ app.controller('managelinks_ctrl', function($scope, $location, $interval, $timeo
             }
           }
       });
+      $scope.isEnd = $scope.isEnd + 1;
       return player;
     }
 
     function traverseLinks(funcs) {
       for(var i in $scope.links) {
-        funcs[$scope.links[i].type](i);
+          funcs[$scope.links[i].type](i);
       }
     }
 
@@ -191,7 +198,7 @@ app.controller('managelinks_ctrl', function($scope, $location, $interval, $timeo
           }
         $scope.duration.options.ceil = Math.max(...durationList());
         $scope.duration.interval_func = $interval(function () {
-              $scope.duration.value = $scope.duration.value + 1;
+            $scope.duration.value = $scope.duration.value + 1;
         }, 1000);
         traverseLinks({ 'youtube': function(i) {
             $scope.links[i].api.playVideo();
