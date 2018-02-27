@@ -58,10 +58,10 @@ app.controller('managelinks_ctrl', function($scope, $location, $interval, $timeo
           $scope.links[index].api.pauseVideo();
           $scope.links[index].isEnd = true;
         }
-        else if($scope.links[index].isEnd
+       /* else if($scope.links[index].isEnd
           && $scope.duration.interval_func != null) {
           $scope.links[index].api.playVideo();
-        }
+        } */
         else if($scope.PlayerState == $scope.PS.STOPPED
           && $scope.links[index].at.elapsed_seconds == $scope.links[index].startSecond + $scope.duration.value) {
           $scope.links[index].startSecond = $scope.links[index].api.getCurrentTime();
