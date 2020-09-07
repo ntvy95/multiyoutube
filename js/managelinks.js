@@ -76,6 +76,7 @@ app.controller('managelinks_ctrl', function($scope, $location, $interval, $timeo
           width: '100%',
           playerVars: {
             'showinfo': 0,
+            'autoplay': 1, 
             'origin': 'https://ntvy95.github.io'
           },
           events: {
